@@ -34,4 +34,6 @@
 * If the autoplay feature policy is used to grant autoplay support to an  iframe and its document.
 - https://developer.mozilla.org/en-US/docs/Web/Media/Autoplay_guide
 
+---
+처음에는 웹페이지가 로드되었을 때, BGM을 자동적으로 실행하려 했으나, 위와 같은 문제에 봉착하여 게임 시작 버튼이 눌렸을 때 실행되도록 변경하였습니다.
 
