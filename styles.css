@@ -79,8 +79,12 @@ body {
 .bug {
   position: absolute;
   display: inline;
+  transition: transfrom 100ms ease-in;
 }
-
+.carrot:hover,
+.bug:hover {
+  transform: scale(1.1);
+}
 .game__modal {
   position: absolute;
   border-radius: 50px;
@@ -88,7 +92,7 @@ body {
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 1;
 }
-.startBtn {
+.modal_btn {
   all: unset;
   cursor: pointer;
   background-color: coral;
@@ -104,6 +108,10 @@ body {
 }
 .result {
   color: whitesmoke;
+}
+.modal__text {
+  font-size: 30px;
+  color: white;
 }
 .restartBtn {
   all: unset;

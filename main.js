@@ -1,127 +1,144 @@
 "use strict";
-const modal = document.querySelector(".game__modal");
-const respon_area = document.querySelector(".response-area");
-const cnt = document.querySelector(".cnt");
-const span = document.querySelector(".timer");
-let isEnd = false;
-const alert_sound = new Audio("./sound/alert.wav");
-const bug_pull = new Audio("./sound/bug_pull.mp3");
-const carrot_pull = new Audio("./sound/carrot_pull.mp3");
-const game_win = new Audio("./sound/game_win.mp3");
 
-function startMusic() {
-  const bgMusic = new Audio("./sound/bg.mp3");
-  bgMusic.play();
+//이거를 클래스 생성할 때 생성자에 넣으면 ㄱㅊ을듯?
+const CARROT_COUNT = 10;
+const IMG_SIZE = 90;
+const BUG_COUNT = 7;
+const GAME_DURATION_SEC = 10;
+
+let timer;
+let started = false;
+let firstStart = true;
+
+const gameModal = document.querySelector(".game__modal");
+const responseArea = document.querySelector(".response-area");
+const areaRect = responseArea.getBoundingClientRect();
+const timerIndicator = document.querySelector(".timer");
+const cntIndicator = document.querySelector(".cnt");
+
+const bgSound = new Audio("sound/bg.mp3");
+const bugSound = new Audio("sound/bug_pull.mp3");
+const carrotSound = new Audio("sound/carrot_pull.mp3");
+const gameWinSound = new Audio("sound/game_win.mp3");
+const alertSound = new Audio("sound/alert.wav");
+
+function startGame() {
+  started = !started;
+  hidePopUp();
+  clearItem();
+  addItem(CARROT_COUNT, "img/carrot.png", "carrot");
+  addItem(BUG_COUNT, "img/bug.png", "bug");
+  startTimer();
+  showScore();
 }
-// 타이머
+function playSound(audio) {
+  audio.play();
+}
+function showScore() {
+  cntIndicator.innerHTML = `${CARROT_COUNT}`;
+}
 function startTimer() {
-  let stopWatch = 10;
-  window.timer = setInterval(() => {
-    alert_sound.play();
-    stopWatch--;
-    if (stopWatch >= 0) {
-      span.textContent = `00:${stopWatch < 10 ? `0${stopWatch}` : stopWatch}`;
-    } else {
-      const printText = "You Lose !";
-      gameOver(printText);
+  playSound(bgSound);
+  let remainingTimeSec = GAME_DURATION_SEC;
+  updateTimerText(remainingTimeSec);
+  timer = setInterval(() => {
+    if (remainingTimeSec <= 0) {
+      gameOver();
+      return;
     }
+    if (!started) clearInterval(timer);
+    playSound(alertSound);
+    updateTimerText(--remainingTimeSec);
   }, 1000);
 }
-// 당근과 벌레의 위치를 담는 배열 리턴
-function createRandomPos(Num) {
-  const leftMin = 0;
-  const topMin = 0;
-  const leftMax = 90;
-  const topMax = 70;
-  const randomNum = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  };
-  let array = new Array(Num);
-  for (let i = 0; i < Num; i++) {
-    array[i] = [randomNum(leftMin, leftMax), randomNum(topMin, topMax)];
+function updateTimerText(time) {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  timerIndicator.innerHTML = `${minutes}:${seconds}`;
+}
+function handleItemListener(target) {
+  if (target.matches(".carrot")) {
+    playSound(carrotSound);
+    updateRemainCarrotScore();
+    deleteCarrot(target);
   }
-  return array;
-}
-// 당근과 벌레를 렌더링
-function renderItem(array, isCarrot) {
-  array.forEach((element) => {
-    const img = document.createElement("img");
-    if (isCarrot) {
-      img.src = "img/carrot.png";
-      img.setAttribute("class", "carrot");
-    } else {
-      img.src = "img/bug.png";
-      img.setAttribute("class", "bug");
-    }
-    img.style.position = "absolute";
-    img.style.left = `${element[0]}%`;
-    img.style.top = `${element[1]}%`;
-    respon_area.appendChild(img);
-  });
-}
-function showItem() {
-  respon_area.innerHTML = "";
-  const carrotPos = createRandomPos(10);
-  const bugPos = createRandomPos(7);
-  renderItem(carrotPos, true);
-  renderItem(bugPos, false);
-}
-// startBtn 눌렀을 때 실행
-function gameStart() {
-  isEnd = false;
-  modal.setAttribute("style", "display:none");
-  cnt.textContent = "10";
-  span.textContent = `00:10`;
-  startTimer();
-  showItem();
-}
-function deleteCarrot(carrot) {
-  respon_area.removeChild(carrot);
-  cnt.textContent = `${parseInt(cnt.textContent) - 1}`;
-  if (cnt.textContent === "0") {
-    game_win.play();
-    const printText = "You Win !";
-    gameOver(printText);
+  if (target.matches(".bug")) {
+    playSound(bugSound);
+    gameOver();
   }
 }
-
-function gameOver(printText) {
-  isEnd = true;
-  clearInterval(window.timer);
-  modal.innerHTML = `
-            <span class="result">${printText}</span>
-            <button class="restartBtn">restart</button>
-    `;
-  modal.setAttribute("style", "display:flex");
-  const restartBtn = document.querySelector(".restartBtn");
-  restartBtn.addEventListener("click", gameStart, false);
+function gameOver() {
+  bgSound.pause();
+  bgSound.currentTime = 0;
+  started = false;
+  clearInterval(timer);
+  resultPopUpText("You Lose!");
+  showPopUp();
 }
-function init() {
-  modal.addEventListener("click", (event) => {
-    if (event.target.className === "startBtn") gameStart();
-  });
-  modal.addEventListener(
-    "click",
-    () => {
-      startMusic();
-    },
-    { once: true }
-  );
-  respon_area.addEventListener("click", (event) => {
-    if (event.target.className === "carrot") {
-      carrot_pull.play();
-      deleteCarrot(event.target);
-    }
-    if (event.target.className === "bug") {
-      const printText = "You Lose !";
-      bug_pull.play();
-      gameOver(printText);
+function resultPopUpText(text) {
+  gameModal.innerHTML = `
+    <span class='modal__text'>${text}</span>
+    <button class="modal_btn">restart</button>
+  `;
+}
+function deleteCarrot(target) {
+  responseArea.removeChild(target);
+}
+function updateRemainCarrotScore() {
+  let currCnt = cntIndicator.textContent;
+  cntIndicator.innerHTML = `${--currCnt}`;
+}
+function addItem(itemCount, imgPath, className) {
+  //아이템을 만들어서 에이리어에 추가해준다.
+  const x1 = 0;
+  const x2 = areaRect.width - IMG_SIZE;
+  const y1 = 0;
+  const y2 = areaRect.height - IMG_SIZE;
+
+  for (let i = 0; i < itemCount; i++) {
+    const item = document.createElement("img");
+    item.setAttribute("src", imgPath);
+    item.setAttribute("class", className);
+    item.style.position = "absolute";
+    const x = randomNumber(x1, x2);
+    const y = randomNumber(y1, y2);
+    item.style.left = `${x}px`;
+    item.style.top = `${y}px`;
+    item.style.userDrag = "none";
+    responseArea.appendChild(item);
+  }
+}
+function randomNumber(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function clearItem() {
+  responseArea.innerHTML = "";
+}
+function hidePopUp() {
+  gameModal.style.visibility = "hidden";
+}
+function showPopUp() {
+  gameModal.style.visibility = "visible";
+}
+
+function initGame() {
+  gameModal.addEventListener("click", (e) => {
+    if (!e.target.matches(".modal_btn")) return;
+    startGame();
+    if (firstStart) {
+      responseArea.addEventListener("click", (e) =>
+        handleItemListener(e.target)
+      );
+      firstStart = false;
     }
   });
 }
+initGame();
 
-window.addEventListener("load", () => {
-  init();
-});
+// * started = !started라고 하면 저절로 바뀌는 코드 방식!
+// * visiable css를 이용하면 레이아웃이 달라지지 않아도 보이지 않게 렌더링 되기 때문에 사라졌다 보여지는 요소에 꿀!
+// * 숫자나 문자로 넣을 것은 무조건 변수로 선언한 뒤 사용!
+// * element.addEventListner('event', (e) => function(e) {} ) === element.addEventListner('event', function(e) )
+// * target.matches('css-selector')를 쓰면 클릭했을 때 무엇을 클릭했는 지 알 수 있다.
+// * 코드를 읽었을 때 무슨 말인 지 알 수 있도록 코드를 작성해야한다. (변수 이름도 마찬가지)
