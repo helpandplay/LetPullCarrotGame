@@ -1,32 +1,30 @@
 "use strict";
-import { GameBuilder, Reason, Result } from "./game.js";
+import { GameBuilder, Result } from "./game.js";
+import { retrieveDB } from "./fetch.js";
 import * as sound from "./music.js";
+
 const CARROT_COUNT = 10;
 const BUG_COUNT = 7;
 const GAME_DURATION_SEC = 10;
-
-function init() {
-  //game class를 리턴하니 game class가 할당된다.
+async function init() {
+  const CARROT_CNT_RANKER = await retrieveDB("/").then((data) => {
+    return data.carrotCnt;
+  });
   const game = new GameBuilder()
     .carrotCnt(CARROT_COUNT)
     .bugCnt(BUG_COUNT)
     .gameDuration(GAME_DURATION_SEC)
     .build();
   game.init();
-  game.setOnGameStopListener((reason) => {
+  game.setOnGameStopListener((result) => {
     sound.pauseBGSound();
     let message;
-    switch (reason) {
-      case Reason.win:
-        message = Result.win;
-        sound.playGameWinSound();
-        break;
-      case Reason.lose:
-        message = Result.lose;
-        sound.playBugSound();
-        break;
-      default:
-        throw new Error("not vaild reason");
+    if (CARROT_CNT_RANKER >= parseInt(result)) {
+      message = Result.lose;
+      sound.playBugSound();
+    } else if (CARROT_CNT_RANKER < parseInt(result)) {
+      message = Result.win;
+      sound.playGameWinSound();
     }
     game.finish(message);
   });
@@ -47,3 +45,12 @@ init();
 // ? -> popup클래스에 있는 setClickListener 함수를 실행해서 onclick 변수에 ()=>{startGame();}; 을 할당
 //3. 리프레시 버튼이 클릭되면 this.onclick && this.onClick();
 // 코드가 실행되면서 ()=>{startGame();};이 this.onclick에 할당되지 않았다면 코드를 실행하지 않음
+
+// main.js의 game.setOnGameStopListener((reason)=>{});
+// ? -> game.js의 setOnGameStopListener에 매개변수 reason=>{}를 전달.
+// game.js의 setOnGameStopListener(onGameStop){ this.onGameStop = onGameStop }
+// ? -> onGameStop = reason=>{} ====> this.GameStop = reason => {} 로 됨.
+// this.onGameStop && this.onGameStop(Reason.lose);
+// ? -> this.GameStop = Reason.lose => {}
+
+// game.js의 this.modal.setRankingListener()

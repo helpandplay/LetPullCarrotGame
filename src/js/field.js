@@ -25,8 +25,8 @@ export class Field {
   }
   init() {
     this.clearItem();
-    this._addItem(this.carrotCnt, "img/carrot.png", itemType.carrot);
-    this._addItem(this.bugCnt, "img/bug.png", itemType.bug);
+    this._addItem(this.carrotCnt, "/asset/img/carrot.png", itemType.carrot);
+    this._addItem(this.bugCnt, "/asset/img/bug.png", itemType.bug);
   }
   setEventListener(handleItemListener) {
     this.handleItemListener = handleItemListener;
@@ -39,12 +39,10 @@ export class Field {
       // ? onClick에는 field라는 클래스의 정보는 받아오지 않는다.
       // ? 따라서 onclick안에 this.handleItemListener는 this가 어디인 지 모르므로 undefined
       this.handleItemListener && this.handleItemListener(itemType.carrot);
-      //   updateRemainCarrotScore();
     }
     if (e.target.matches(".bug")) {
       sound.playBugSound();
       this.handleItemListener && this.handleItemListener(itemType.bug);
-      //gameOver("You Lose!");
     }
   }
 
@@ -55,7 +53,6 @@ export class Field {
     this.field.innerHTML = "";
   }
   _addItem(itemCount, imgPath, className) {
-    //아이템을 만들어서 에이리어에 추가해준다.
     const x1 = 0;
     const x2 = this.areaRect.width - IMG_SIZE;
     const y1 = 0;

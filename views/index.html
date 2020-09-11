@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="stylesheet" href="/src/css/styles.css" />
+    <script
+      src="https://kit.fontawesome.com/bb751cefb6.js"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="/src/js/main_refactoring.js" defer></script>
+  </head>
+  <body>
+    <!-- Start modal -->
+    <div class="game__modal">
+      <button class="start_btn">GameStart</button>
+      <button class="ranking_btn">Ranking</button>
+    </div>
+    <!-- result modal -->
+    <div class="result__modal">
+      <span class="modal__text"></span>
+      <button class="start_btn">restart</button>
+      <button class="input_ranking">regist</button>
+    </div>
+    <!-- Ranking modal -->
+    <div class="ranking__modal">
+      <button class="prev">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="list__head">
+        <span>등수</span>
+        <span>닉네임</span>
+        <span>기록</span>
+        <span>등록일</span>
+      </div>
+      <ul class="ranking__list"></ul>
+    </div>
+    <!-- Enroll Ranking modal -->
+    <div class="enroll__modal">
+      <span class="ment">
+        축하합니다! 당신은 <span class="carrotCount"></span>개를 뽑았습니다!
+      </span>
+      <form action="" method="post" class="form_con">
+        <input type="text" class="nickname" placeholder="nickname" />
+        <button type="submit" class="enroll__submit">Enroll</button>
+      </form>
+    </div>
+    <!-- Game Container -->
+    <div class="game__con">
+      <div class="timer__con">
+        <span class="timer">00:00</span>
+      </div>
+      <div class="cnt__con">
+        <span class="cnt">0</span>
+      </div>
+      <div class="response-area"></div>
+    </div>
+  </body>
+</html>

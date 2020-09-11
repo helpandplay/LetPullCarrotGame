@@ -2,6 +2,7 @@
 import * as sound from "./music.js";
 import Modal from "./modal.js";
 import { Field, itemType } from "./field.js";
+import Ranking from "./ranking.js";
 
 //타입을 보장받게 해주는 방법
 export const Reason = Object.freeze({
@@ -9,8 +10,8 @@ export const Reason = Object.freeze({
   lose: "lose",
 });
 export const Result = Object.freeze({
-  win: "You Win!",
-  lose: "You Lose!",
+  win: "랭킹에 등록하실 수 있습니다!",
+  lose: "랭킹 등록에 실패!",
 });
 
 // Build Pattern
@@ -45,22 +46,28 @@ class Game {
     this.started = false;
     this.modal = new Modal();
     this.field = new Field(CARROT_COUNT, BUG_COUNT);
+    this.ranking = new Ranking();
     this.field.setEventListener(this.handleItemListener);
     this.timerIndicator = document.querySelector(".timer");
     this.cntIndicator = document.querySelector(".cnt");
+    this.currentCarrot = 0;
   }
   setOnGameStopListener(onGameStop) {
     this.onGameStop = onGameStop;
   }
   handleItemListener = (item) => {
-    if (item === itemType.carrot) this.updateRemainCarrotScore();
-    if (item === itemType.bug) this.onGameStop && this.onGameStop(Reason.lose);
+    if (item === itemType.carrot) this.updateCarrotScore();
+    if (item === itemType.bug)
+      this.onGameStop && this.onGameStop(this.cntIndicator.textContent);
   };
-  updateRemainCarrotScore() {
+  updateCarrotScore() {
     let currCnt = this.cntIndicator.textContent;
-    this.cntIndicator.innerHTML = `${--currCnt}`;
-    if (this.cntIndicator.textContent === "0")
-      this.onGameStop && this.onGameStop(Reason.win);
+    this.cntIndicator.innerHTML = `${++currCnt}`;
+    this.currentCarrot++;
+    if (this.currentCarrot == this.carrotCnt) {
+      this.field.init();
+      this.currentCarrot = 0;
+    }
   }
   start = () => {
     this.started = !this.started;
@@ -72,10 +79,10 @@ class Game {
     this.started = false;
     clearInterval(this.timer);
     this.modal.renderResultElement(resultText);
-    this.modal.show();
+    this.modal.show(this.modal.resultModal);
   }
   showScore() {
-    this.cntIndicator.innerHTML = `${this.carrotCnt}`;
+    this.cntIndicator.innerHTML = "0";
   }
   startTimer() {
     sound.playBGSound();
@@ -83,7 +90,7 @@ class Game {
     this.updateTimerText(remainingTimeSec);
     this.timer = setInterval(() => {
       if (remainingTimeSec <= 0) {
-        this.onGameStop && this.onGameStop(Reason.lose);
+        this.onGameStop && this.onGameStop(this.cntIndicator.textContent);
         return;
       }
       if (!this.started) clearInterval(this.timer);
@@ -99,6 +106,7 @@ class Game {
   }
 
   init() {
-    this.modal.setEventListener(this.start);
+    this.modal.setStartListener(this.start);
+    this.ranking.init();
   }
 }
